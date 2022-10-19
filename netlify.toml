@@ -1,0 +1,12 @@
+[build]
+command = "npm run build"
+functions = "functions/"
+publish = "build"
+
+targetPort = 3001
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
