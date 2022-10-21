@@ -9,8 +9,8 @@ exports.handler = async (event, context) => {
 
   let endpointParams = {
     grant_type: "fb_exchange_token",
-    client_id: "790248245606669",
-    client_secret: "49c0553c0d605f15dfb2899056f20cbb",
+    client_id: process.env.REACT_APP_FACEBOOK_CLIENT_ID,
+    client_secret: process.env.REACT_APP_FACEBOOK_CLIENT_SECRET,
     redirect_uri: redirect_uri,
     fb_exchange_token: access_token,
   };
