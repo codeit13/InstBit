@@ -8,9 +8,15 @@ import {
   Button,
   Heading,
   Text,
+  Tag,
+  TagLabel,
+  TagCloseButton,
   Progress,
   useColorModeValue,
   Textarea,
+  Link,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 
 import { useState } from "react";
@@ -20,21 +26,29 @@ import axios from "axios";
 
 import * as filestack from "filestack-js";
 
-const baseURL = window.location.protocol + "//" + window.location.host + "/api";
+const baseURL = `${window.location.protocol}//${window.location.host}`;
 console.log("Base URL: ", baseURL);
 
 const client = axios.create({
-  //   baseURL: baseURL,
-  baseURL: "http://localhost:61714",
-  headers: { "Content-Type": "multipart/form-data" },
+  baseURL: `${baseURL}/.netlify/functions`,
+  // baseURL: "http://localhost:57461",
+  headers: {
+    /* Required for CORS support to work */
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    Accept: "application/json",
+  },
 });
 
 function App({ userAuth }) {
-  let access_token = userAuth?.user?.access_token;
+  let access_token = userAuth?.user?.accessToken;
   let instagram_account_id = userAuth?.user?.userID;
   let [postFile, setPostFile] = useState([]);
   let [caption, setCaption] = useState("");
-  let [scheduleDateTime, setScheduleDateTime] = useState("");
+  let [scheduleDateTime, setScheduleDateTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
 
   let [fileUploadProgress, setFileUploadProgress] = useState({
     display: false,
@@ -42,44 +56,63 @@ function App({ userAuth }) {
     isIndeterminate: false,
   });
 
+  let [instagramApiResp, setInstagramApiResp] = useState({
+    imageMediaObjectId: null,
+    imageMediaStatusCode: null,
+    publishImageResponse: null,
+  });
+
   const fileStackClient = filestack.init(
     process.env.REACT_APP_FILE_STACK_API_KEY
   );
 
-  const handlePostFile = (file) => {
-    setPostFile((current) => [...current, file]);
-  };
-
   let handlePostFileChange = (e) => {
+    setFileUploadProgress({
+      display: true,
+      progressValue: 0,
+      isIndeterminate: true,
+    });
     fileStackClient
       .multiupload(
         e.target.files,
         {
           onProgress: (event) =>
             setFileUploadProgress((current) => {
-              current.display = true;
-              current.progressValue = event.totalPercent;
-              return current;
+              if (event.totalPercent >= 0 && event.totalPercent <= 20) {
+                return {
+                  display: true,
+                  progressValue: event.totalPercent,
+                  isIndeterminate: true,
+                };
+              } else {
+                return {
+                  display: true,
+                  progressValue: event.totalPercent,
+                  isIndeterminate: false,
+                };
+              }
             }),
         },
         {},
         {}
       )
       .then((res) => {
-        console.log(".then(res) : ", res);
-        setFileUploadProgress((current) => {
-          current.display = false;
-          current.progressValue = 0;
-          current.isIndeterminate = false;
-          console.log(current);
-          return current;
+        setFileUploadProgress(() => {
+          return {
+            display: false,
+            progressValue: 0,
+            isIndeterminate: false,
+          };
         });
+        let postFileArr = [];
         res.forEach((file) => {
-          handlePostFile({
+          postFileArr.push({
+            name: file.name,
             url: file.url,
             mimeType: file.mimetype,
           });
         });
+        setPostFile([...postFile, ...postFileArr]);
       })
       .catch((err) => {
         console.log(err);
@@ -87,20 +120,78 @@ function App({ userAuth }) {
   };
 
   let handlePostSubmit = () => {
-    let formData = new FormData();
-    formData.append("postFile", postFile);
-    formData.append("caption", caption);
-    formData.append("scheduleDateTime", scheduleDateTime);
-    formData.append("access_token", access_token);
-    formData.append("instagram_account_id", instagram_account_id);
+    const PARAMS = {
+      postFile: postFile,
+      caption: caption,
+      scheduleDateTime: scheduleDateTime,
+      access_token: access_token,
+      instagram_account_id: instagram_account_id,
+    };
 
-    client.post("/postContent", formData).then((response) => {
+    // createMediaObject
+    client.post("/createMediaObject", PARAMS).then((response) => {
       console.log("/postContent API RES :::: ", response);
+      setInstagramApiResp({
+        ...instagramApiResp,
+        imageMediaObjectId: response.data.resp,
+      });
+    });
+
+    // getMediaObjectStatus
+    client
+      .post("/getMediaObjectStatus", {
+        ...PARAMS,
+        imageMediaObjectId: instagramApiResp.imageMediaObjectId,
+      })
+      .then((response) => {
+        console.log("/postContent API RES :::: ", response);
+        setInstagramApiResp({
+          ...instagramApiResp,
+          imageMediaStatusCode: response.data.resp,
+        });
+      });
+
+    // publishMedia
+    client
+      .post("/publishMedia", {
+        ...PARAMS,
+        imageMediaObjectId: instagramApiResp.imageMediaObjectId,
+      })
+      .then((response) => {
+        console.log("/postContent API RES :::: ", response);
+        setInstagramApiResp({
+          ...instagramApiResp,
+          publishImageResponse: response.data.resp,
+        });
+      });
+
+    // getContentPublishingLimit
+    client.post("/getContentPublishingLimit", PARAMS).then((response) => {
+      console.log("/postContent API RES :::: ", response);
+      setInstagramApiResp({
+        ...instagramApiResp,
+        contentPublishingApiLimit: response.data.resp,
+      });
     });
   };
+
+  // getLongLivedAccessToken
+  client
+    .post("/getLongLivedAccessToken", {
+      access_token: userAuth?.user?.accessToken,
+      instagram_account_id: userAuth?.user?.userID,
+      redirect_uri: baseURL,
+    })
+    .then((response) => {
+      console.log("/postContent API RES :::: ", response);
+    });
+
   return (
     <Flex minH={"100vh"} align={"center"} justify={"center"}>
       <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
+        {/* <div>
+          <pre>{JSON.stringify(instagramApiResp, null, 2)}</pre>
+        </div> */}
         <Stack align={"center"}>
           <Heading fontSize={"4xl"} textAlign={"center"}>
             Upload a Post to Instagram
@@ -124,17 +215,43 @@ function App({ userAuth }) {
                 multiple
                 onChange={handlePostFileChange}
               />
-              {fileUploadProgress.display ? "TRUE" : "FALSE"}{" "}
-              {fileUploadProgress.progressValue}{" "}
-              {fileUploadProgress.isIndeterminate ? "TRUE" : "FALSE"}
               <Progress
-                // display={fileUploadProgress.display ? "block" : "none"}
-                isIndeterminate={fileUploadProgress?.isIndeterminate}
-                value={fileUploadProgress?.progressValue}
+                display={fileUploadProgress.display ? "block" : "none"}
+                isIndeterminate={fileUploadProgress.isIndeterminate}
+                value={fileUploadProgress.progressValue}
                 size="xs"
                 colorScheme="green"
                 mt={4}
               />
+              <Wrap mt={4} spacing={4}>
+                {postFile.map((file, index) => {
+                  return (
+                    <WrapItem key={index}>
+                      <Tag
+                        size={"md"}
+                        borderRadius="full"
+                        variant="solid"
+                        colorScheme="green"
+                      >
+                        <TagLabel>
+                          <Link target={"_blank"} href={file.url}>
+                            {file.name}
+                          </Link>
+                        </TagLabel>
+                        <TagCloseButton
+                          onClick={(e) => {
+                            setPostFile(
+                              postFile.filter(
+                                (currentFile) => currentFile.url !== file.url
+                              )
+                            );
+                          }}
+                        />
+                      </Tag>
+                    </WrapItem>
+                  );
+                })}
+              </Wrap>
             </FormControl>
             <FormControl id="caption" isRequired>
               <FormLabel>Caption</FormLabel>

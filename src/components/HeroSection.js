@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-
+import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -64,7 +64,7 @@ const HeroSection = ({ userAuth }) => {
             bg: "green.500",
           }}
         >
-          Go to App
+          <RouterLink to={"/app"}>Go to App</RouterLink>
         </Button>
         {/* <Button variant={"link"} colorScheme={"blue"} size={"sm"}>
               Learn more

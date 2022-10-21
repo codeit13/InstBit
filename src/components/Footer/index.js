@@ -52,24 +52,26 @@ export default function Footer() {
   const { colorMode } = useColorMode();
   return (
     <Box
-      bg={useColorModeValue("gray.50", "gray.900")}
+      // bg={useColorModeValue("gray.50", "gray.900")}
       color={useColorModeValue("gray.700", "gray.200")}
     >
       <Container as={Stack} maxW={"6xl"} py={10}>
         <SimpleGrid
-          templateColumns={{ sm: "1fr 1fr", md: "2fr 2fr 2fr" }}
+          templateColumns={{ sm: "1fr", md: "2fr 2fr 2fr" }}
           spacing={8}
         >
           <Stack spacing={6}>
             <Box>
               <Box boxSize="150px">
-                <Image
-                  w={"-webkit-fit-content"}
-                  h={"unset"}
-                  objectFit="cover"
-                  src={require(`../../assets/${colorMode}-logo.png`)}
-                  alt="InstBit"
-                />
+                <RouterLink to={"/"}>
+                  <Image
+                    w={"-webkit-fit-content"}
+                    h={"unset"}
+                    objectFit="cover"
+                    src={require(`../../assets/${colorMode}-logo.png`)}
+                    alt="InstBit"
+                  />
+                </RouterLink>
               </Box>
             </Box>
             <Text fontSize={"sm"}>© 2022 Insbit. All rights reserved</Text>
@@ -89,7 +91,7 @@ export default function Footer() {
             <ListHeader>InstBit</ListHeader>
             <RouterLink to={"/acout-us"}>About us</RouterLink>
             <RouterLink to={"/contact"}>Contact us</RouterLink>
-            <RouterLink to={"/privacy"}>Privacy</RouterLink>
+            <RouterLink to={"/privacy-policy"}>Privacy</RouterLink>
             <RouterLink to={"/terms-and-conditions"}>
               Terms & Conditions
             </RouterLink>

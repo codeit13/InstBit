@@ -2,7 +2,7 @@ let axios = require("axios");
 
 function getCreds(access_token, instagram_account_id) {
   const graph_domain = "https://graph.facebook.com/";
-  const graph_version = "v6.0";
+  const graph_version = "v15.0";
 
   return {
     access_token: access_token,
@@ -13,20 +13,20 @@ function getCreds(access_token, instagram_account_id) {
   };
 }
 
-function makeApiCall(url, payload, type) {
-  let data;
+async function makeApiCall(url, payload, type) {
+  let resp;
 
   if (type === "POST") {
-    data = axios.post(url, payload);
+    resp = await axios.post(url, payload);
   } else {
-    const endpointParams = new url.URLSearchParams(payload);
-    data = axios.get(url, endpointParams);
+    const endpointParams = new URLSearchParams(payload);
+    resp = await axios.get(url, endpointParams);
   }
 
   return {
     url: url,
     req: payload,
-    resp: data.content,
+    resp: resp.data.content,
   };
 }
 

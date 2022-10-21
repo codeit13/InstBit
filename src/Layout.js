@@ -13,6 +13,8 @@ import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
 import Profile from "./components/Profile";
 import Contact from "./components/Contact";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TnC from "./components/TnC";
 import Footer from "./components/Footer";
 
 import { Stack, Center, Container, useColorModeValue } from "@chakra-ui/react";
@@ -36,24 +38,27 @@ function Layout() {
   return (
     <BrowserRouter>
       <Stack>
-        <Header />
-        <Center>
-          <Container
-            maxW="100%"
-            css={{
-              backgroundImage: useColorModeValue(CONFETTI_LIGHT, CONFETTI_DARK),
-              backgroundAttachment: "fixed",
-            }}
-          >
+        <Container
+          p={0}
+          maxW="100%"
+          css={{
+            backgroundImage: useColorModeValue(CONFETTI_LIGHT, CONFETTI_DARK),
+            backgroundAttachment: "fixed",
+          }}
+        >
+          <Header />
+          <Center>
             <Routes>
               <Route path="/" element={<HeroSection />} />
               <Route path="/app" element={<App />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-and-conditions" element={<TnC />} />
             </Routes>
-          </Container>
-        </Center>
-        <Footer />
+          </Center>
+          <Footer />
+        </Container>
       </Stack>
     </BrowserRouter>
   );

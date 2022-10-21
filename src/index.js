@@ -5,7 +5,7 @@ import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 
 // Chakra UI
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 
 import Layout from "./Layout";
 
@@ -14,15 +14,26 @@ import reportWebVitals from "./reportWebVitals";
 import { store } from "./services/store";
 import { saveStateToLocalStorage } from "./services/utils/localStorage";
 
+// import { initFacebookSdk } from "./helpers/initFacebookSdk";
+
 store.subscribe(() => {
   saveStateToLocalStorage("userAuth", store.getState().userAuth);
 });
+
+const theme = extendTheme({
+  config: {
+    initialColorMode: "dark",
+  },
+});
+
+// wait for facebook sdk before startup
+// initFacebookSdk();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <Layout />
       </ChakraProvider>
     </Provider>

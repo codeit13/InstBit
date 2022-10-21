@@ -4,7 +4,7 @@ function sleep(s) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000));
 }
 
-function createMediaObject(params) {
+async function createMediaObject(params) {
   let url = params.endpoint_base + params.instagram_account_id + "/media";
   let payLoad = {
     caption: params.caption,
@@ -18,10 +18,10 @@ function createMediaObject(params) {
     payLoad["video_url"] = params.media_url;
   }
 
-  return makeApiCall(url, payLoad, "POST");
+  return await makeApiCall(url, payLoad, "POST");
 }
 
-function getMediaObjectStatus(mediaObjectId, params) {
+async function getMediaObjectStatus(mediaObjectId, params) {
   let url = params.endpoint_base + "/" + mediaObjectId;
 
   let payLoad = {
@@ -29,10 +29,10 @@ function getMediaObjectStatus(mediaObjectId, params) {
     access_token: params.access_token,
   };
 
-  return makeApiCall(url, payLoad, "GET");
+  return await makeApiCall(url, payLoad, "GET");
 }
 
-function publishMedia(mediaObjectId, params) {
+async function publishMedia(mediaObjectId, params) {
   let url =
     params.endpoint_base + params.instagram_account_id + "/media_publish";
 
@@ -41,10 +41,10 @@ function publishMedia(mediaObjectId, params) {
     access_token: params.access_token,
   };
 
-  return makeApiCall(url, payLoad, "POST");
+  return await makeApiCall(url, payLoad, "POST");
 }
 
-function getContentPublishingLimit(params) {
+async function getContentPublishingLimit(params) {
   let url =
     params["endpoint_base"] +
     params["instagram_account_id"] +
@@ -54,7 +54,7 @@ function getContentPublishingLimit(params) {
     access_token: params.access_token,
   };
 
-  return makeApiCall(url, payLoad, "GET");
+  return await makeApiCall(url, payLoad, "GET");
 }
 
 module.exports = {
